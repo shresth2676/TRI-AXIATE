@@ -2,92 +2,66 @@
 #include <nRF24L01.h>
 #include <RF24.h>
 
-// Pins
-int pot1_pin = 8;
-int pot2_pin = 11;
-
-// NRF24 setup
+// NRF24 setup (CE, CSN pins)
 RF24 radio(9, 10);
 
-const byte addresses[][6] = {
-  "joy1",   // for J1
-  "joy2",   // for J2
-  "pot1",   // for P1
-  "pot2"    // for P2
-};
-// Joystick struct
-struct joystick {
+// Unique addresses for each input
+const byte J1_ADDR[6] = "J1X1";
+const byte J2_ADDR[6] = "J2X2";
+const byte P1_ADDR[6] = "P1X1";
+const byte P2_ADDR[6] = "P2X2";
+
+// Joystick and potentiometer pins
+int J1_x_pin = A0;
+int J1_y_pin = A1;
+int J2_x_pin = A2;
+int J2_y_pin = A3;
+int P1_pin   = A4;
+int P2_pin   = A5;
+
+// Data structs
+struct Joystick {
   int xVal;
   int yVal;
-  int x_pin;
-  int y_pin;
 };
 
-// Potentiometer struct
-struct potentiometer {
-  int pot_pin;
-  int pot_val;
+struct Potentiometer {
+  int val;
 };
 
-// Final packet struct (to send everything)
-struct SendData {
-  int J1x;
-  int J1y;
-  int J2x;
-  int J2y;
-  int P1;
-  int P2;
-};
-
-SendData packet;
+Joystick J1, J2;
+Potentiometer P1, P2;
 
 void setup() {
-  
   radio.begin();
-  radio.setPALevel(RF24_PA_HIGH);   // use HIGH for PA+LNA
+  radio.setPALevel(RF24_PA_HIGH);   // High power for PA+LNA
   radio.setDataRate(RF24_1MBPS);
-
-  radio.openWritingPipe(address);
-  radio.stopListening();
+  radio.stopListening();             // TX mode
 }
 
 void loop() {
-  // Joysticks
-  joystick J1, J2;
-  J1.x_pin = A0;  
-  J1.y_pin = A1;
-  J2.x_pin = A2;  
-  J2.y_pin = A3;
+  // Read Joysticks
+  J1.xVal = analogRead(J1_x_pin);
+  J1.yVal = analogRead(J1_y_pin);
 
-  J1.xVal = analogRead(J1.x_pin);
-  J1.yVal = analogRead(J1.y_pin);
-  J2.xVal = analogRead(J2.x_pin);
-  J2.yVal = analogRead(J2.y_pin);
+  J2.xVal = analogRead(J2_x_pin);
+  J2.yVal = analogRead(J2_y_pin);
 
-  // Pots
-  potentiometer p1, p2;
-  p1.pot_pin = A4;  
-  p1.pot_val = analogRead(p1.pot_pin);
-  p2.pot_pin = A5;  
-  p2.pot_val = analogRead(p2.pot_pin);
+  // Read potentiometers
+  P1.val = analogRead(P1_pin);
+  P2.val = analogRead(P2_pin);
 
-  // --- Send J1 ---
-  radio.openWritingPipe(addresses[0]);
+  // Send each input to its own address
+  radio.openWritingPipe(J1_ADDR);
   radio.write(&J1, sizeof(J1));
 
-  // --- Send J2 ---
-  radio.openWritingPipe(addresses[1]);
+  radio.openWritingPipe(J2_ADDR);
   radio.write(&J2, sizeof(J2));
 
-  // --- Send P1 ---
-  radio.openWritingPipe(addresses[2]);
-  radio.write(&p1, sizeof(p1));
+  radio.openWritingPipe(P1_ADDR);
+  radio.write(&P1, sizeof(P1));
 
-  // --- Send P2 ---
-  radio.openWritingPipe(addresses[3]);
-  radio.write(&p2, sizeof(p2));
-
-  //all values sent to the robotic arm
-  //something
-  delay(50);
+  radio.openWritingPipe(P2_ADDR);
+  radio.write(&P2, sizeof(P2));
+  delay(50);  // adjust as needed for responsiveness
 }
