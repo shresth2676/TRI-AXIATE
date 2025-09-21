@@ -88,6 +88,6 @@ void loop() {
   radio.write(&p2, sizeof(p2));
 
   //all values sent to the robotic arm
-  
+  //something
   delay(50);
 }
