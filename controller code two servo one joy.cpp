@@ -49,10 +49,10 @@ void setup() {
 void loop() {
   // Joysticks
   joystick J1,J2;//defining the joystick 1 and 2
-  J1.x_pin = A0;  //defining the pins
-  J1.y_pin = A1;
-  J2.x_pin = A2;  
-  J2.y_pin = A3;
+  J1.x_pin = A2;  //defining the pins
+  J1.y_pin = A3;
+  J2.x_pin = A0;  
+  J2.y_pin = A6;
 
   J1.xVal = analogRead(J1.x_pin);//reading the data form the joystick x and y
   J1.yVal = analogRead(J1.y_pin);
@@ -60,7 +60,7 @@ void loop() {
   J2.yVal = analogRead(J2.y_pin);
 
   potentiometer p1;// reding the values from the potentiometer
-  p1.pot_pin = A4;  
+  p1.pot_pin = A1;  
   p1.pot_val = analogRead(p1.pot_pin);
 
   radio.openWritingPipe(addresses[0]);//sending value of J1
